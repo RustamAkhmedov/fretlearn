@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>fretlearn – Griffbrett lernen</title>
+<meta name="description" content="Lerne, wo jeder Ton auf dem Gitarren-Griffbrett liegt: kurze Übungsrunden, Oktav-Tricks, Brücke zu Akkorden. Offline nutzbar.">
+<meta name="theme-color" content="#141114">
+<meta name="color-scheme" content="dark">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="stylesheet" href="css/style.css">
+<script type="module" src="js/app.js"></script>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="#/lernen" aria-label="fretlearn Startseite">
+    <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 2c7 0 12 3 12 9 0 7-6 15-12 19C10 26 4 18 4 11c0-6 5-9 12-9z" fill="var(--accent)"/><circle cx="16" cy="12.5" r="3.6" fill="#1b1411"/></svg>
+    <span>fretlearn</span>
+  </a>
+  <nav class="tabs" aria-label="Hauptnavigation">
+    <a href="#/lernen" data-tab="lernen"><svg viewBox="0 0 24 24"><path d="M3 9l9-5 9 5-9 5-9-5z"/><path d="M7 11.5V16c0 1.5 2.5 3 5 3s5-1.5 5-3v-4.5"/></svg><span>Lernen</span></a>
+    <a href="#/ueben" data-tab="ueben"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1" fill="currentColor"/></svg><span>Üben</span></a>
+    <a href="#/erkunden" data-tab="erkunden"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M15.5 8.5l-2 5-5 2 2-5z"/></svg><span>Erkunden</span></a>
+    <a href="#/tricks" data-tab="tricks"><svg viewBox="0 0 24 24"><path d="M9 17h6M10 20.5h4"/><path d="M12 3a6 6 0 0 0-3.5 10.9c.4.3.5.7.5 1.1v.5h6V15c0-.4.2-.8.5-1.1A6 6 0 0 0 12 3z"/></svg><span>Tricks</span></a>
+    <a href="#/fortschritt" data-tab="fortschritt"><svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg><span>Fortschritt</span></a>
+  </nav>
+  <div class="top-right">
+    <span class="streak" id="streak"></span>
+    <button class="icon-btn" id="btn-settings" aria-label="Einstellungen"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
+  </div>
+</header>
+<main id="view"><noscript><p style="padding:24px">fretlearn braucht JavaScript.</p></noscript></main>
+<div class="modal" id="modal" hidden></div>
+</body>
+</html>
