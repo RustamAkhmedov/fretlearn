@@ -1,5 +1,5 @@
 // Offline-Cache. VERSION erhöhen, wenn sich Dateien ändern.
-const VERSION = 'fretlearn-v1';
+const VERSION = 'fretlearn-v2';
 const FILES = [
   './', 'index.html', 'css/style.css', 'manifest.webmanifest',
   'js/app.js', 'js/theory.js', 'js/store.js', 'js/audio.js', 'js/fretboard.js', 'js/lessons.js', 'js/quiz.js', 'js/tips.js',

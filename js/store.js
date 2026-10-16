@@ -1,4 +1,4 @@
-// Fortschritt & Einstellungen – liegt nur im localStorage dieses Browsers.
+// Fortschritt & Einstellungen – liegt im localStorage dieses Browsers (+ Backup-Datei auf Wunsch).
 const KEY = 'fretlearn.v1';
 export const FAST = 3000; // "sicher" heißt: richtig und schneller als 3 s
 
@@ -11,21 +11,60 @@ const DEF = () => ({
   total: { a: 0, c: 0 },
 });
 
+const merge = d => {
+  const def = DEF();
+  return { ...def, ...d, settings: { ...def.settings, ...d.settings }, practice: { ...def.practice, ...d.practice }, total: { ...def.total, ...d.total } };
+};
+
 function load() {
   try {
     const raw = localStorage.getItem(KEY);
-    if (raw) {
-      const d = JSON.parse(raw), def = DEF();
-      return { ...def, ...d, settings: { ...def.settings, ...d.settings }, practice: { ...def.practice, ...d.practice }, total: { ...def.total, ...d.total } };
-    }
+    if (raw) return merge(JSON.parse(raw));
   } catch { /* privates Fenster o. Ä. */ }
   return DEF();
 }
 
 let st = load(), timer = 0;
+export function flush() {
+  clearTimeout(timer); timer = 0;
+  try { localStorage.setItem(KEY, JSON.stringify(st)); } catch { /* egal */ }
+}
+// nur speichern, wenn noch etwas offen ist – sonst überschreibt ein alter Tab neueren Stand
+const flushPending = () => { if (timer) flush(); };
 export function save() {
   clearTimeout(timer);
-  timer = setTimeout(() => { try { localStorage.setItem(KEY, JSON.stringify(st)); } catch { /* egal */ } }, 120);
+  timer = setTimeout(flush, 120);
+}
+// App wird geschlossen/weggewischt → nichts Ungespeichertes verlieren
+if (typeof addEventListener === 'function') {
+  addEventListener('pagehide', flushPending);
+  addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') flushPending(); });
+}
+
+// Browser bitten, die Daten nicht beim Aufräumen zu löschen.
+// Ergebnis: true = dauerhaft, false = abgelehnt, null = Browser kann das nicht
+export async function persisted() {
+  try { return navigator.storage?.persisted ? await navigator.storage.persisted() : null; } catch { return null; }
+}
+let asked = false;
+export async function requestPersist() {
+  const now = await persisted();
+  if (now !== false || asked) return now;
+  asked = true;
+  try { return await navigator.storage.persist(); } catch { return false; }
+}
+
+// Backup als Datei
+export function exportData() {
+  flush();
+  return JSON.stringify({ app: 'fretlearn', v: 1, saved: new Date().toISOString(), data: st });
+}
+export function importData(text) {
+  const j = JSON.parse(text);
+  const d = j?.app === 'fretlearn' ? j.data : null;
+  if (!d || typeof d !== 'object' || typeof d.pos !== 'object' || typeof d.days !== 'object') throw new Error('Keine fretlearn-Sicherung');
+  st = merge(d);
+  flush();
 }
 export const state = () => st;
 export const settings = () => st.settings;
@@ -59,7 +98,7 @@ export function weight(s, f) {
   return [6, 4, 2.5, 1.2, 0.6][r.k] * (1 + Math.min(days, 7) / 5);
 }
 
-export function finishRound() { (st.days[today()] ||= { q: 0, r: 0 }).r++; save(); }
+export function finishRound() { (st.days[today()] ||= { q: 0, r: 0 }).r++; flush(); requestPersist(); }
 
 export function streak() {
   const d = new Date();

@@ -268,6 +268,12 @@ function progressView(el) {
       return `<div class="ps"><b>${T.stringShort(s)}</b>${pctBar(v)}<span>${Math.round(v * 100)} %</span></div>`;
     }).join('')}</div></div>
     ${weak.length ? `<div class="card"><h3>Da hakt's noch</h3><ul class="misslist">${weak.map(x => `<li>${T.noteName(T.pcAt(x.s, x.f))} – ${T.stringName(x.s)}, Bund ${x.f} <span class="muted">(${x.r.c}/${x.r.a} richtig)</span></li>`).join('')}</ul></div>` : ''}
+    <div class="card backup"><h3>Sichern</h3>
+      <p class="small muted persist-status">Speicher wird geprüft …</p>
+      <div class="row"><button class="btn small do-export">Backup speichern</button><button class="btn small do-import">Backup laden</button></div>
+      <input type="file" accept="application/json,.json" class="import-file" hidden>
+      <p class="small muted backup-msg" hidden></p>
+    </div>
     <div class="card danger"><h3>Neu anfangen</h3><p class="small muted">Löscht deinen Fortschritt auf diesem Gerät. Einstellungen bleiben.</p><button class="btn reset">Fortschritt zurücksetzen</button></div>
   </section>`;
   const fb = new Fretboard(el.querySelector('.boardwrap'), { from: 0, to: max, fit: false });
@@ -280,7 +286,42 @@ function progressView(el) {
     if (!rb.classList.contains('confirm')) { rb.classList.add('confirm'); rb.textContent = 'Wirklich alles löschen?'; return; }
     S.resetProgress(); route();
   };
+  bindBackup(el);
   return () => fb.destroy();
+}
+
+function bindBackup(el) {
+  const status = el.querySelector('.persist-status'), msg = el.querySelector('.backup-msg'), file = el.querySelector('.import-file');
+  const say = t => { msg.textContent = t; msg.hidden = false; };
+  const showStatus = p => {
+    status.textContent = p === true ? 'Dauerhaft gespeichert ✓ – der Browser räumt deinen Fortschritt nicht von selbst weg. Gegen „Browserdaten löschen“ hilft nur ein Backup.'
+      : p === false ? 'Der Browser darf deinen Fortschritt bei Platzmangel löschen. Tipp: fretlearn als App installieren, dann erlaubt er dauerhaftes Speichern eher.'
+      : 'Dieser Browser sagt nicht, ob er deinen Fortschritt behält. Mach ab und zu ein Backup.';
+    if (p === false) {
+      const b = document.createElement('button');
+      b.className = 'btn small'; b.style.marginTop = '8px'; b.textContent = 'Dauerhaft speichern';
+      b.onclick = async () => { const r = await S.requestPersist(); showStatus(r); if (!r) say('Der Browser hat abgelehnt. Ein Backup ist dann besonders sinnvoll.'); };
+      status.append(document.createElement('br'), b);
+    }
+  };
+  S.persisted().then(showStatus);
+  el.querySelector('.do-export').onclick = () => {
+    const url = URL.createObjectURL(new Blob([S.exportData()], { type: 'application/json' }));
+    const a = Object.assign(document.createElement('a'), { href: url, download: `fretlearn-backup-${S.today()}.json` });
+    document.body.append(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 5000);
+    say('Backup gespeichert (Downloads).');
+  };
+  const ib = el.querySelector('.do-import');
+  ib.onclick = () => {
+    if (!ib.classList.contains('confirm')) { ib.classList.add('confirm'); ib.textContent = 'Ersetzt deinen Fortschritt – Datei wählen'; return; }
+    file.click();
+  };
+  file.onchange = async () => {
+    const f = file.files[0]; if (!f) return;
+    try { S.importData(await f.text()); applySettings(); updateStreak(); route(); }
+    catch { ib.classList.remove('confirm'); ib.textContent = 'Backup laden'; say('Das ist keine gültige fretlearn-Sicherung.'); }
+  };
 }
 
 // ——— Einstellungen ———
@@ -293,7 +334,7 @@ function openSettings() {
     <div class="field"><span>Bünde</span>${seg('frets', [['12', '0–12'], ['24', '0–24']], st.frets)}
       <p class="small muted">Gilt für Üben, Erkunden und Fortschritt. Der Lernpfad bleibt bei 0–12.</p></div>
     <div class="field"><span>Sound</span>${seg('sound', [['1', 'An'], ['0', 'Aus']], st.sound ? 1 : 0)}</div>
-    <p class="small muted about">fretlearn speichert alles nur in diesem Browser. Kein Account, kein Server.</p>
+    <p class="small muted about">fretlearn speichert alles nur in diesem Browser. Kein Account, kein Server. Backup: unter „Fortschritt“.</p>
   </div>`;
   m.hidden = false;
   const close = () => { m.hidden = true; m.innerHTML = ''; route(); };
