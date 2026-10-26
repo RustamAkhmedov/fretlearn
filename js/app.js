@@ -294,7 +294,8 @@ function bindBackup(el) {
   const status = el.querySelector('.persist-status'), msg = el.querySelector('.backup-msg'), file = el.querySelector('.import-file');
   const say = t => { msg.textContent = t; msg.hidden = false; };
   const showStatus = p => {
-    status.textContent = p === true ? 'Dauerhaft gespeichert ✓ – der Browser räumt deinen Fortschritt nicht von selbst weg. Gegen „Browserdaten löschen“ hilft nur ein Backup.'
+    status.textContent = S.app ? 'In der App gespeichert ✓ – bleibt, bis du fretlearn deinstallierst oder die App-Daten löschst. Für einen Handywechsel: Backup.'
+      : p === true ? 'Dauerhaft gespeichert ✓ – der Browser räumt deinen Fortschritt nicht von selbst weg. Gegen „Browserdaten löschen“ hilft nur ein Backup.'
       : p === false ? 'Der Browser darf deinen Fortschritt bei Platzmangel löschen. Tipp: fretlearn als App installieren, dann erlaubt er dauerhaftes Speichern eher.'
       : 'Dieser Browser sagt nicht, ob er deinen Fortschritt behält. Mach ab und zu ein Backup.';
     if (p === false) {
@@ -306,6 +307,7 @@ function bindBackup(el) {
   };
   S.persisted().then(showStatus);
   el.querySelector('.do-export').onclick = () => {
+    if (S.app) { S.app.saveBackup(S.exportData(), `fretlearn-backup-${S.today()}.json`); return; }
     const url = URL.createObjectURL(new Blob([S.exportData()], { type: 'application/json' }));
     const a = Object.assign(document.createElement('a'), { href: url, download: `fretlearn-backup-${S.today()}.json` });
     document.body.append(a); a.click(); a.remove();
@@ -334,10 +336,11 @@ function openSettings() {
     <div class="field"><span>Bünde</span>${seg('frets', [['12', '0–12'], ['24', '0–24']], st.frets)}
       <p class="small muted">Gilt für Üben, Erkunden und Fortschritt. Der Lernpfad bleibt bei 0–12.</p></div>
     <div class="field"><span>Sound</span>${seg('sound', [['1', 'An'], ['0', 'Aus']], st.sound ? 1 : 0)}</div>
-    <p class="small muted about">fretlearn speichert alles nur in diesem Browser. Kein Account, kein Server. Backup: unter „Fortschritt“.</p>
+    <p class="small muted about">fretlearn speichert alles nur ${S.app ? 'auf diesem Gerät' : 'in diesem Browser'}. Kein Account, kein Server. Backup: unter „Fortschritt“.</p>
   </div>`;
   m.hidden = false;
-  const close = () => { m.hidden = true; m.innerHTML = ''; route(); };
+  const close = () => { m.hidden = true; m.innerHTML = ''; window.fretlearnBack = null; route(); };
+  window.fretlearnBack = () => { close(); return true; }; // Zurück-Taste der Android-App
   m.onclick = e => { if (e.target === m) close(); };
   m.querySelector('.close').onclick = close;
   bindSeg(m, 'names', v => { S.setSetting('hNames', v === '1'); applySettings(); });
@@ -351,6 +354,6 @@ document.addEventListener('pointerdown', () => A.unlock(), { passive: true });
 addEventListener('hashchange', route);
 route();
 
-if ('serviceWorker' in navigator && location.protocol.startsWith('http') && !/^(localhost|127\.)/.test(location.hostname)) {
+if (!S.app && 'serviceWorker' in navigator && location.protocol.startsWith('http') && !/^(localhost|127\.)/.test(location.hostname)) {
   navigator.serviceWorker.register('sw.js').catch(() => {});
 }

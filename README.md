@@ -36,9 +36,21 @@ js/tips.js          Tipps & Tricks
 js/store.js         Fortschritt (localStorage)
 js/audio.js         Gitarrenton (Karplus-Strong, Web Audio)
 sw.js               Offline-Cache
+android/            Android-App (WebView-Hülle, Fortschritt als Datei)
 ```
 
 Lokal starten: `python3 -m http.server` im Ordner, dann http://localhost:8000 öffnen.
 Tests: `node --test tests/*.test.mjs`
 
 Bei Änderungen an Dateien die `VERSION` in `sw.js` erhöhen.
+
+## Android-App
+
+Im Browser kann der Fortschritt verloren gehen, wenn der Browser aufräumt. Deshalb gibt's fretlearn auch als eigene Android-App: dieselbe Website, eingepackt in eine WebView. Der Fortschritt wird zusätzlich als Datei im App-Speicher abgelegt.
+
+```
+android/build.sh            APK bauen → android/build/fretlearn.apk
+android/build.sh install    bauen + per USB (adb) aufs Handy
+```
+
+Braucht nur das Android-SDK (`~/Android/Sdk` oder `ANDROID_HOME`, Build-Tools + eine Plattform) und ein JDK – kein Gradle.

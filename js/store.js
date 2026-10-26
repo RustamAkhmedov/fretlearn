@@ -1,5 +1,7 @@
 // Fortschritt & Einstellungen – liegt im localStorage dieses Browsers (+ Backup-Datei auf Wunsch).
+// In der Android-App zusätzlich als Datei im App-Speicher (window.FretlearnApp, siehe android/).
 const KEY = 'fretlearn.v1';
+export const app = globalThis.FretlearnApp || null;
 export const FAST = 3000; // "sicher" heißt: richtig und schneller als 3 s
 
 const DEF = () => ({
@@ -18,7 +20,7 @@ const merge = d => {
 
 function load() {
   try {
-    const raw = localStorage.getItem(KEY);
+    const raw = app?.load() || localStorage.getItem(KEY);
     if (raw) return merge(JSON.parse(raw));
   } catch { /* privates Fenster o. Ä. */ }
   return DEF();
@@ -27,7 +29,9 @@ function load() {
 let st = load(), timer = 0;
 export function flush() {
   clearTimeout(timer); timer = 0;
-  try { localStorage.setItem(KEY, JSON.stringify(st)); } catch { /* egal */ }
+  const json = JSON.stringify(st);
+  try { app?.save(json); } catch { /* egal */ }
+  try { localStorage.setItem(KEY, json); } catch { /* egal */ }
 }
 // nur speichern, wenn noch etwas offen ist – sonst überschreibt ein alter Tab neueren Stand
 const flushPending = () => { if (timer) flush(); };
@@ -44,6 +48,7 @@ if (typeof addEventListener === 'function') {
 // Browser bitten, die Daten nicht beim Aufräumen zu löschen.
 // Ergebnis: true = dauerhaft, false = abgelehnt, null = Browser kann das nicht
 export async function persisted() {
+  if (app) return true;
   try { return navigator.storage?.persisted ? await navigator.storage.persisted() : null; } catch { return null; }
 }
 let asked = false;
